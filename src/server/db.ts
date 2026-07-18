@@ -10,7 +10,9 @@ import {
   Movie, Series, Episode, WatchHistory, Favorite, SystemLog 
 } from '../types.js';
 
-const DB_PATH = path.join(process.cwd(), 'db_store.json');
+const DB_PATH = process.env.VERCEL 
+  ? path.join('/tmp', 'db_store.json')
+  : path.join(process.cwd(), 'db_store.json');
 
 interface DatabaseSchema {
   users: User[];
@@ -318,6 +320,19 @@ export class Database {
 
   private load() {
     try {
+      if (process.env.VERCEL) {
+        const bundledPath = path.join(process.cwd(), 'db_store.json');
+        if (!fs.existsSync(DB_PATH)) {
+          if (fs.existsSync(bundledPath)) {
+            try {
+              fs.copyFileSync(bundledPath, DB_PATH);
+            } catch (copyErr) {
+              console.error('Failed to copy bundled database to /tmp', copyErr);
+            }
+          }
+        }
+      }
+
       if (fs.existsSync(DB_PATH)) {
         const fileContent = fs.readFileSync(DB_PATH, 'utf-8');
         this.data = JSON.parse(fileContent);
