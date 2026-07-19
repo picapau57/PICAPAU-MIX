@@ -20,6 +20,17 @@ const PORT = Number(process.env.PORT || 3000);
 app.use(cors());
 app.use(express.json());
 
+// Path normalization middleware for Vercel serverless environment
+app.use((req, res, next) => {
+  console.log(`[Express Incoming] Method: ${req.method} | URL: ${req.url}`);
+  if (req.url && !req.url.startsWith('/api') && !req.url.startsWith('/assets') && req.url !== '/' && !req.url.includes('.')) {
+    const oldUrl = req.url;
+    req.url = '/api' + req.url;
+    console.log(`[Express Rewritten] ${oldUrl} -> ${req.url}`);
+  }
+  next();
+});
+
 // Lazy-initialized Gemini API client
 let aiClient: GoogleGenAI | null = null;
 function getAI() {
