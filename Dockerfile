@@ -7,7 +7,8 @@ WORKDIR /app
 COPY package.json ./
 
 # Install all dependencies (including devDependencies) so we can compile the app
-RUN npm install
+# We use --ignore-scripts here so that 'postinstall' (which runs the build) doesn't run before files are copied
+RUN npm install --ignore-scripts
 
 # Copy all project files to the builder
 COPY . .
